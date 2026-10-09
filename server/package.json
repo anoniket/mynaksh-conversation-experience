@@ -1,0 +1,16 @@
+{
+  "name": "mynaksh-chat-proxy",
+  "private": true,
+  "type": "module",
+  "description": "Dev-only proxy that keeps the Anthropic key off the device and returns typed recommendations.",
+  "scripts": {
+    "start": "node --env-file-if-exists=.env index.ts"
+  },
+  "engines": {
+    "node": ">=22.18"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.132.1",
+    "zod": "^4.6.5"
+  }
+}

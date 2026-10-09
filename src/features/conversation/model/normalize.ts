@@ -15,9 +15,8 @@ export function normalizeMessage(
   dto: ApiMessage,
   fallbackCreatedAt: number,
 ): Message {
-  const createdAt = dto.createdAt
-    ? new Date(dto.createdAt).getTime()
-    : fallbackCreatedAt;
+  const parsed = dto.createdAt ? Date.parse(dto.createdAt) : NaN;
+  const createdAt = Number.isFinite(parsed) ? parsed : fallbackCreatedAt;
   const type = KNOWN_MESSAGE_TYPES.has(dto.type) ? dto.type : 'system';
 
   switch (type) {

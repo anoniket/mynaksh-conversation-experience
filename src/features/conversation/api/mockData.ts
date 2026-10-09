@@ -2,7 +2,12 @@ import type { ApiMessage } from '../model/types';
 
 /** The payload from the brief, verbatim, plus createdAt so separators/grouping have data. */
 export function buildSeedConversation(now: number = Date.now()): ApiMessage[] {
-  const yesterday = now - 24 * 60 * 60 * 1000;
+  // Anchor so the demo always shows a "Yesterday" and a "Today" separator,
+  // even right after midnight.
+  const startOfToday = new Date(now);
+  startOfToday.setHours(0, 0, 0, 0);
+  const yesterday = startOfToday.getTime() - 12 * 60 * 60 * 1000; // noon yesterday
+  const todayBase = Math.max(now, startOfToday.getTime() + 60 * 60 * 1000);
   const at = (base: number, minutesAgo: number) =>
     new Date(base - minutesAgo * 60_000).toISOString();
 
@@ -35,14 +40,14 @@ export function buildSeedConversation(now: number = Date.now()): ApiMessage[] {
       id: '4',
       type: 'human',
       text: 'I also recommend focusing on your upcoming Jupiter transit.',
-      createdAt: at(now, 12),
+      createdAt: at(todayBase, 12),
       authorName: 'Astrologer Meera',
     },
     {
       id: '5',
       type: 'human',
       text: 'Jupiter enters your 10th house next month, which is favourable for recognition at work.',
-      createdAt: at(now, 11),
+      createdAt: at(todayBase, 11),
       authorName: 'Astrologer Meera',
     },
   ];

@@ -52,6 +52,13 @@ const initialData = {
  */
 export function createConversationStore(api: ConversationApi = mockConversationApi) {
   return create<ConversationState>()((set, get) => {
+    // Sends are independent; the indicator stays on until the last one settles.
+    let inFlight = 0;
+    const setTyping = (delta: number) => {
+      inFlight = Math.max(0, inFlight + delta);
+      set({ isAssistantTyping: inFlight > 0 });
+    };
+
     const append = (message: Message) =>
       set(s => ({
         byId: { ...s.byId, [message.id]: message },
@@ -70,7 +77,7 @@ export function createConversationStore(api: ConversationApi = mockConversationA
 
     const deliver = async (message: UserMessage) => {
       patch(message.id, { status: 'sending' });
-      set({ isAssistantTyping: true });
+      setTyping(+1);
       try {
         const reply = await api.sendMessage({
           clientId: message.id,
@@ -85,7 +92,7 @@ export function createConversationStore(api: ConversationApi = mockConversationA
       } catch {
         patch(message.id, { status: 'failed' });
       } finally {
-        set({ isAssistantTyping: false });
+        setTyping(-1);
       }
     };
 
@@ -105,6 +112,9 @@ export function createConversationStore(api: ConversationApi = mockConversationA
             byId,
             order: messages.map(m => m.id),
             lastAppendedId: messages.at(-1)?.id ?? null,
+            // A fresh conversation has no stale reply target or feedback.
+            replyToId: null,
+            feedback: {},
           });
         } catch (e) {
           set({
